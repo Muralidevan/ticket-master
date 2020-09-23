@@ -1,23 +1,32 @@
-const custInitialState = []
-
-const customerReducer = (state = custInitialState, action) => {
+const customersReducer = (state = [], action) => {
 	switch (action.type) {
 		case 'SET_CUSTOMER': {
-			//console.log("'SET_CUSTOMER' reducer", action.payload)
-			return [].concat(action.payload)
-		}
-		case 'SET_NEW_CUSTOMER': {
-			//console.log("'SET_NEW_CUSTOMER' reducer", action.payload)
 			return state.concat(action.payload)
 		}
-		// case "SET_CUSTOMER_SHOW" : {
-		//     console.log("from set show", action.payload)
-		//     //return [].concat(action.payload)
-		// }
+
+		case 'GET_CUSTOMERS': {
+			return [].concat(action.payload)
+		}
+
+		case 'REMOVE_CUSTOMER': {
+			return state.filter((cust) => {
+				return cust._id !== action.payload
+			})
+		}
+
+		case 'EDIT_CUSTOMER': {
+			return state.map((cust) => {
+				if (cust._id === action.payload.id) {
+					return Object.assign({}, cust, action.payload.data)
+				} else {
+					return Object.assign({}, cust)
+				}
+			})
+		}
 		default: {
 			return [].concat(state)
 		}
 	}
 }
 
-export default customerReducer
+export default customersReducer

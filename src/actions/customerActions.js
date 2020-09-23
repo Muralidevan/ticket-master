@@ -1,20 +1,54 @@
 import axios from '../config/axios'
+import { toast } from 'react-toastify'
 
-export const setCustomer = (customer) => {
-	return {
-		type: 'SET_CUSTOMER',
-		payload: customer,
+export const setPostCustomer = (customer) => {
+	return { type: 'SET_CUSTOMER', payload: customer }
+}
+
+export const startPostCustomer = (data, redirect) => {
+	return (dispatch) => {
+		axios
+			.post('/customers', data, {
+				headers: {
+					'x-auth': localStorage.getItem('authToken'),
+				},
+			})
+			.then((response) => {
+				console.log(response)
+				if (response.data.hasOwnProperty('errors')) {
+					toast.error(response.data.message, {
+						position: 'top-center',
+
+						hideProgressBar: false,
+						closeOnClick: false,
+						pauseOnHover: true,
+						draggable: true,
+					})
+				} else {
+					const customer = response.data
+					dispatch(setPostCustomer(customer))
+					toast.success('Customer Added Successfully', {
+						position: 'top-center',
+						autoClose: 3000,
+						hideProgressBar: false,
+						closeOnClick: false,
+						pauseOnHover: true,
+						draggable: true,
+					})
+					redirect()
+				}
+			})
+			.catch((err) => {
+				console.log(err)
+			})
 	}
 }
 
-export const setNewCustomer = (customer) => {
-	return {
-		type: 'SET_NEW_CUSTOMER',
-		payload: customer,
-	}
+export const setCustomers = (customers) => {
+	return { type: 'GET_CUSTOMERS', payload: customers }
 }
 
-export const startGetCustomer = () => {
+export const startGetCustomers = () => {
 	return (dispatch) => {
 		axios
 			.get('/customers', {
@@ -23,78 +57,95 @@ export const startGetCustomer = () => {
 				},
 			})
 			.then((response) => {
-				const customer = response.data
-				dispatch(setCustomer(customer))
-				//console.log("from startrGetCustomer", customer)
+				console.log(response)
+				const customers = response.data
+				dispatch(setCustomers(customers))
 			})
 			.catch((err) => {
-				alert(err)
+				console.log(err)
 			})
 	}
 }
 
-export const startAddCustomer = (formData, redirect) => {
+export const setRemoveCustomer = (id) => {
+	return { type: 'REMOVE_CUSTOMER', payload: id }
+}
+
+export const startRemoveCustomer = (id) => {
+	return (dispatch) => {
+		const confirm = window.confirm('Are you sure u want to delete')
+		if (confirm) {
+			axios
+				.delete(`/customers/${id}`, {
+					headers: {
+						'x-auth': localStorage.getItem('authToken'),
+					},
+				})
+				.then((response) => {
+					console.log(response.data._id)
+					const id = response.data._id
+					dispatch(setRemoveCustomer(id))
+					toast('Customer Removed', {
+						position: 'top-center',
+						autoClose: 3000,
+						hideProgressBar: false,
+						closeOnClick: false,
+						pauseOnHover: true,
+						draggable: true,
+					})
+				})
+				.catch((err) => {
+					console.log(err)
+				})
+		}
+	}
+}
+
+export const setEditCustomer = (id, data) => {
+	return {
+		type: 'EDIT_CUSTOMER',
+		payload: {
+			id,
+			data,
+		},
+	}
+}
+
+export const startEditCustomer = (data, id, redirect) => {
 	return (dispatch) => {
 		axios
-			.post('/customers', formData, {
+			.put(`/customers/${id}`, data, {
 				headers: {
 					'x-auth': localStorage.getItem('authToken'),
 				},
 			})
 			.then((response) => {
+				//console.log(response)
 				if (response.data.hasOwnProperty('errors')) {
-					alert(response.data.message)
+					toast.error(response.data.message, {
+						position: 'top-center',
+
+						hideProgressBar: false,
+						closeOnClick: false,
+						pauseOnHover: true,
+						draggable: true,
+					})
 				} else {
-					alert('Customer Added')
-					const customer = response.data
-					//console.log('new cust from addCust action', response.data )
-					dispatch(setNewCustomer(customer))
+					const cust = response.data
+					dispatch(setEditCustomer(id, cust))
+					toast.success('Customer Details Have Been Updated Successfully', {
+						position: 'top-center',
+						autoClose: 3000,
+						hideProgressBar: false,
+						closeOnClick: false,
+						pauseOnHover: true,
+						draggable: true,
+					})
 					redirect()
 				}
 			})
 			.catch((err) => {
-				alert(err)
-			})
-	}
-}
-
-export const startCustomerRemove = (id) => {
-	return (dispatch) => {
-		axios
-			.delete(`/customers/${id}`, {
-				headers: {
-					'x-auth': localStorage.getItem('authToken'),
-				},
-			})
-			.then((response) => {
-				if (response.data == {}) {
-					alert('No Data to Delete')
-				} else {
-					alert('Are You Sure ?')
-					alert(response.data.name.concat(' has been deleted'))
-					dispatch(setCustomer({}))
-				}
-			})
-	}
-}
-
-export const startCustomerShow = (id, redirect) => {
-	return (dispatch) => {
-		axios
-			.get(`/customers/${id}`, {
-				headers: {
-					'x-auth': localStorage.getItem('authToken'),
-				},
-			})
-			.then((response) => {
-				if (response.data == {}) {
-					alert('No Data to Show')
-				} else {
-					const customer = response.data
-					console.log('from show action', customer)
-					dispatch(setCustomer(customer))
-					redirect()
-				}
+				console.log(err)
 			})
 	}
 }

@@ -1,10 +1,10 @@
-import React from "react";
+import React from 'react'
 
 function home(props) {
 	return (
-		<div>
-			<h1>home component</h1>
+		<div className='ticket-master'>
+			<h1>Welcome To Ticket Master</h1>
 		</div>
-	);
+	)
 }
-export default home;
+export default home
